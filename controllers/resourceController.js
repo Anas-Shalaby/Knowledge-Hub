@@ -112,7 +112,12 @@ const downloadResource = asyncHandler(async (req, res) => {
     throw new Error("Resource not found");
   }
 
-  const fileUrl = cloudinary.v2.url(resource.fileUrl, { resource_type: "raw" });
+  // Fetch the file from Cloudinary
+  const fileResponse = await axios({
+    url: fileUrl,
+    method: "GET",
+    responseType: "stream", // Stream the response
+  });
 
   // Set headers to force download
   res.setHeader(
