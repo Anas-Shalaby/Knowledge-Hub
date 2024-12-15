@@ -114,13 +114,6 @@ const downloadResource = asyncHandler(async (req, res) => {
 
   const fileUrl = cloudinary.v2.url(resource.fileUrl, { resource_type: "raw" });
 
-  // Stream the file from Cloudinary
-  const response = await axios({
-    url: fileUrl,
-    method: "GET",
-    responseType: "stream",
-  });
-
   // Set headers to force download
   res.setHeader(
     "Content-Disposition",
@@ -128,13 +121,7 @@ const downloadResource = asyncHandler(async (req, res) => {
   );
   res.setHeader("Content-Type", "application/pdf");
 
-  // Pipe the file to the response
-  response.data.pipe(res);
-
-  // If headers have not been sent yet, send an error response
-  if (res.headersSent) {
-    res.status(500).json({ error: "Internal Server Error" });
-  }
+  res.status(200).json({ fileUrl });
 });
 
 const deleteResource = asyncHandler(async (req, res) => {
