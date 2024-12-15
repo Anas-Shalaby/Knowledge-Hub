@@ -80,7 +80,7 @@ app.post(
 app.get("/api/resources", getResources);
 app.get("/api/resources/:id", getResource);
 
-app.get("/api/resources/:id/download", protect, async (req, res, next) => {
+app.get("/api/resources/:id/download", async (req, res, next) => {
   try {
     const download = await downloadResource(req, res, next);
     // Update contribution for resource download
