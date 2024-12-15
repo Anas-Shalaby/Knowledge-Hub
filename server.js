@@ -37,8 +37,10 @@ cloudinary.v2.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary.v2,
   params: {
+    resource_type: "raw", // Ensures support for non-image files like PDFs
+
     folder: "uplodas",
-    allowed_formats: ["pdf", "jpg", "png", "docx"],
+    allowed_formats: ["pdf"],
   },
 });
 
