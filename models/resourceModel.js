@@ -1,11 +1,11 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const reviewSchema = mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'User',
+      ref: "User",
     },
     rating: {
       type: Number,
@@ -26,7 +26,7 @@ const resourceSchema = mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'User',
+      ref: "User",
     },
     title: {
       type: String,
@@ -59,11 +59,14 @@ const resourceSchema = mongoose.Schema(
       required: true,
       default: 0,
     },
+    publicId: {
+      type: String,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const Resource = mongoose.model('Resource', resourceSchema);
+const Resource = mongoose.model("Resource", resourceSchema);
 export default Resource;

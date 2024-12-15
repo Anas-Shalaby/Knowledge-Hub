@@ -1,8 +1,9 @@
-import asyncHandler from 'express-async-handler';
-import Resource from '../models/resourceModel.js';
-import fs from 'fs';
-import path from 'path';
-
+import asyncHandler from "express-async-handler";
+import Resource from "../models/resourceModel.js";
+import fs from "fs";
+import path from "path";
+import cloudinary from "cloudinary";
+import axios from "axios";
 // @desc    Create a new resource
 // @route   POST /api/resources
 // @access  Private
@@ -12,7 +13,7 @@ const createResource = asyncHandler(async (req, res) => {
 
   if (!file) {
     res.status(400);
-    throw new Error('No file uploaded');
+    throw new Error("No file uploaded");
   }
 
   const resource = new Resource({
@@ -21,7 +22,7 @@ const createResource = asyncHandler(async (req, res) => {
     subject,
     topic,
     description,
-    fileUrl: file.path // Store the file path
+    fileUrl: file.path, // Store the file path
   });
 
   const createdResource = await resource.save();
@@ -33,19 +34,19 @@ const createResource = asyncHandler(async (req, res) => {
 // @access  Public
 const getResources = asyncHandler(async (req, res) => {
   const { subject, topic, search } = req.query;
-  
+
   let query = {};
-  
+
   if (subject) query.subject = subject;
   if (topic) query.topic = topic;
   if (search) {
     query.$or = [
-      { title: { $regex: search, $options: 'i' } },
-      { description: { $regex: search, $options: 'i' } },
+      { title: { $regex: search, $options: "i" } },
+      { description: { $regex: search, $options: "i" } },
     ];
   }
 
-  const resources = await Resource.find(query).populate('user', 'name');
+  const resources = await Resource.find(query).populate("user", "name");
   res.json(resources);
 });
 
@@ -64,7 +65,7 @@ const createResourceReview = asyncHandler(async (req, res) => {
 
     if (alreadyReviewed) {
       res.status(400);
-      throw new Error('Resource already reviewed');
+      throw new Error("Resource already reviewed");
     }
 
     const review = {
@@ -80,23 +81,23 @@ const createResourceReview = asyncHandler(async (req, res) => {
       resource.reviews.length;
 
     await resource.save();
-    res.status(201).json({ message: 'Review added' });
+    res.status(201).json({ message: "Review added" });
   } else {
     res.status(404);
-    throw new Error('Resource not found');
+    throw new Error("Resource not found");
   }
 });
 
 const getResource = asyncHandler(async (req, res) => {
   const resource = await Resource.findById(req.params.id).populate(
-    'reviews.user',
-    'name'
+    "reviews.user",
+    "name"
   );
   if (resource) {
     res.json(resource);
   } else {
     res.status(404);
-    throw new Error('Resource not found');
+    throw new Error("Resource not found");
   }
 });
 
@@ -108,37 +109,28 @@ const downloadResource = asyncHandler(async (req, res) => {
 
   if (!resource) {
     res.status(404);
-    throw new Error('Resource not found');
+    throw new Error("Resource not found");
   }
 
-  const filePath = resource.fileUrl;
-  
-  // Check if file exists
-  if (!fs.existsSync(filePath)) {
-    res.status(404);
-    throw new Error('File not found');
-  }
-
-  // Set headers for file download
-  res.download(filePath, path.basename(filePath), (err) => {
-    if (err) {
-      // Handle any errors during download
-      console.error('Download error:', err);
-      res.status(500).send('Error downloading file');
-    }
+  // Generate the secure URL for the file
+  const fileUrl = cloudinary.url(resource.fileUrl, {
+    resource_type: "raw", // For non-image files like PDFs
   });
+
+  res.redirect(fileUrl);
 });
 
 const deleteResource = asyncHandler(async (req, res) => {
   const resource = await Resource.findByIdAndDelete(req.params.id);
-  if(!resource){
+
+  if (!resource) {
     res.status(404);
-    throw new Error('Resource not found');
+    throw new Error("Resource not found");
   }
   // Ensure only the owner can delete
   if (resource.user.toString() !== req.user._id.toString()) {
     res.status(403);
-    throw new Error('Not authorized to delete this resource');
+    throw new Error("Not authorized to delete this resource");
   }
   // Safely delete the file
   const filePath = resource.fileUrl;
@@ -147,11 +139,18 @@ const deleteResource = asyncHandler(async (req, res) => {
       fs.unlinkSync(filePath);
     }
   } catch (error) {
-    console.error('Error deleting file:', error);
+    console.error("Error deleting file:", error);
     // Optionally, you might want to log this error or handle it differently
   }
-  
-  res.json({ message: 'Resource removed' });
-})
 
-export { createResource, getResources, getResource, createResourceReview, downloadResource ,deleteResource};
+  res.json({ message: "Resource removed" });
+});
+
+export {
+  createResource,
+  getResources,
+  getResource,
+  createResourceReview,
+  downloadResource,
+  deleteResource,
+};
