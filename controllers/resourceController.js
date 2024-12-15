@@ -114,7 +114,7 @@ const downloadResource = asyncHandler(async (req, res) => {
 
   // Fetch the file from Cloudinary
   const fileResponse = await axios({
-    url: fileUrl,
+    url: resource.fileUrl,
     method: "GET",
     responseType: "stream", // Stream the response
   });
