@@ -129,10 +129,11 @@ const downloadResource = asyncHandler(async (req, res) => {
   res.setHeader("Content-Type", "application/pdf");
 
   // Pipe the file to the response
+  response.data.pipe(res);
 
   // If headers have not been sent yet, send an error response
   if (res.headersSent) {
-    response.data.pipe(res);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
