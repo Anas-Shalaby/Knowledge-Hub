@@ -121,7 +121,7 @@ const downloadResource = asyncHandler(async (req, res) => {
   );
   res.setHeader("Content-Type", "application/pdf");
 
-  res.status(200).json({ fileUrl });
+  fileResponse.data.pipe(res);
 });
 
 const deleteResource = asyncHandler(async (req, res) => {
