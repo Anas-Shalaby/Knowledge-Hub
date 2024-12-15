@@ -112,12 +112,24 @@ const downloadResource = asyncHandler(async (req, res) => {
     throw new Error("Resource not found");
   }
 
-  // Generate the secure URL for the file
-  const fileUrl = cloudinary.url(resource.fileUrl, {
-    resource_type: "raw", // For non-image files like PDFs
+  const fileUrl = cloudinary.v2.url(resource.fileUrl, { resource_type: "raw" });
+
+  // Stream the file from Cloudinary
+  const response = await axios({
+    url: fileUrl,
+    method: "GET",
+    responseType: "stream",
   });
 
-  res.redirect(fileUrl);
+  // Set headers to force download
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="${resource.title || "file"}.pdf"`
+  );
+  res.setHeader("Content-Type", "application/pdf");
+
+  // Pipe the file to the response
+  response.data.pipe(res);
 });
 
 const deleteResource = asyncHandler(async (req, res) => {
