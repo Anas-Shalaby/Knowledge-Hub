@@ -18,41 +18,42 @@ import path from "path";
 import contributionRoutes from "./routes/contributionRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
+import cloudinary from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 
 dotenv.config();
 const app = express();
-
 connectDB();
 
 app.use(cors());
 app.use(express.json());
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/"); // Make sure this uploads directory exists
-  },
-  filename: function (req, file, cb) {
-    cb(null, req.body.fileUrl || Date.now() + path.extname(file.originalname));
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary.v2,
+  params: {
+    folder: "uplodas",
+    allowed_formats: ["pdf", "jpg", "png", "docx"],
   },
 });
 
+// // Configure multer for file uploads
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "uploads/"); // Make sure this uploads directory exists
+//   },
+//   filename: function (req, file, cb) {
+//     cb(null, req.body.fileUrl || Date.now() + path.extname(file.originalname));
+//   },
+// });
+
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
-  fileFilter: function (req, file, cb) {
-    const filetypes = /pdf/;
-    const mimetype = filetypes.test(file.mimetype);
-    const extname = filetypes.test(
-      path.extname(file.originalname).toLowerCase()
-    );
-
-    if (mimetype && extname) {
-      return cb(null, true);
-    }
-
-    cb(new Error("Only PDF files are allowed!"));
-  },
 });
 
 // Routes
