@@ -119,10 +119,13 @@ const downloadResource = asyncHandler(async (req, res) => {
     responseType: "stream", // Stream the response
   });
 
-  // Set headers to force download
+  // Sanitize the filename for Content-Disposition
+  const safeFilename = `${resource.title || "file"}.pdf`.replace(/["\\]/g, ""); // Remove invalid characters
+
+  // Set headers to force download as a PDF
   res.setHeader(
     "Content-Disposition",
-    `attachment; filename="${resource.title || "file"}.pdf"`
+    `attachment; filename="${encodeURIComponent(safeFilename)}"`
   );
   res.setHeader("Content-Type", "application/pdf");
 
