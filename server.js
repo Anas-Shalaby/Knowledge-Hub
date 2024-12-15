@@ -13,7 +13,6 @@ import {
   deleteResource,
 } from "./controllers/resourceController.js";
 import { updateContribution } from "./controllers/contributionController.js";
-import { getDashboardData } from "./controllers/dashboardController.js";
 import multer from "multer";
 import path from "path";
 import contributionRoutes from "./routes/contributionRoutes.js";
